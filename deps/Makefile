@@ -58,7 +58,7 @@ ifeq ($(uname_S),SunOS)
 	LUA_CFLAGS= -D__C99FEATURES__=1
 endif
 
-LUA_CFLAGS+= -O2 -Wall -DLUA_ANSI $(CFLAGS)
+LUA_CFLAGS+= -O0 -Wall -DLUA_ANSI $(CFLAGS)
 LUA_LDFLAGS+= $(LDFLAGS)
 
 lua: .make-prerequisites

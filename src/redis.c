@@ -144,7 +144,7 @@ struct redisCommand *commandTable;
  *    发布/订阅相关的命令
  *
  * f: force replication of this command, regardless of server.dirty.
- *    无视 server.dirty ，强制复制这个命令。
+ *    无视 server.dirty ，强制复制这个命令。(server.dirty是指 redisServer.dirty? redisServer.dirty 表示自最后一次save以来,数据库被修改的次数)
  *
  * s: command not allowed in scripts.
  *    不允许在脚本中使用的命令
@@ -166,7 +166,7 @@ struct redisCommand *commandTable;
  * t: Allow command while a slave has stale data but is not allowed to
  *    server this data. Normally no command is accepted in this condition
  *    but just a few.
- *    允许在附属节点带有过期数据时执行的命令。
+ *    允许在slave节点带有过期数据时执行的命令。
  *    这类命令很少有，只有几个。
  *
  * M: Do not automatically propagate the command on MONITOR.
@@ -2407,6 +2407,7 @@ void alsoPropagate(struct redisCommand *cmd, int dbid, robj **argv, int argc,
 /* It is possible to call the function forceCommandPropagation() inside a
  * Redis command implementaiton in order to to force the propagation of a
  * specific command execution into AOF / Replication. */
+// 可以在 redis 命令实现中调用 forceCommandPropagation() 函数, 这样可以强制该命令传播到 AOF/replication 中
 void forceCommandPropagation(redisClient *c, int flags) {
     if (flags & REDIS_PROPAGATE_REPL) c->flags |= REDIS_FORCE_REPL;
     if (flags & REDIS_PROPAGATE_AOF) c->flags |= REDIS_FORCE_AOF;
@@ -2446,7 +2447,7 @@ void call(redisClient *c, int flags) {
 
     /* When EVAL is called loading the AOF we don't want commands called
      * from Lua to go into the slowlog or to populate statistics. */
-    // 不将从 Lua 中发出的命令放入 SLOWLOG ，也不进行统计
+    // 如果正在loading数据,同时是通过EVAL执行LUA命令,我们不将从 Lua 中发出的命令放入 SLOWLOG ，也不进行统计
     if (server.loading && c->flags & REDIS_LUA_CLIENT)
         flags &= ~(REDIS_CALL_SLOWLOG | REDIS_CALL_STATS);
 
@@ -2752,6 +2753,7 @@ int processCommand(redisClient *c) {
     }
 
     /* Exec the command */
+    // 如果client正在MULTI中, 则除了 EXEC DISCARD MULTI WATCH等命令会立即执行外，Redis会将这些命令加入到 queue 中
     if (c->flags & REDIS_MULTI &&
         c->cmd->proc != execCommand && c->cmd->proc != discardCommand &&
         c->cmd->proc != multiCommand && c->cmd->proc != watchCommand)

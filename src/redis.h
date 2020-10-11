@@ -912,8 +912,8 @@ struct redisServer {
     // 服务器的当前客户端，仅用于崩溃报告
     redisClient *current_client; /* Current client, only used on crash report */
 
-    int clients_paused;         /* True if clients are currently paused */
-    mstime_t clients_pause_end_time; /* Time when we undo clients_paused */
+    int clients_paused;         /* True if clients are currently paused. 如果client被终止,则设置为true */
+    mstime_t clients_pause_end_time; /* Time when we undo clients_paused. 我们撤销client_paused的时间 */
 
     // 网络错误
     char neterr[ANET_ERR_LEN];   /* Error buffer for anet.c */
@@ -1023,7 +1023,7 @@ struct redisServer {
     int tcpkeepalive;               /* Set SO_KEEPALIVE if non-zero. */
     int active_expire_enabled;      /* Can be disabled for testing purposes. */
     size_t client_max_querybuf_len; /* Limit for client query buffer length */
-    int dbnum;                      /* Total number of configured DBs */
+    int dbnum;                      /* Total number of configured DBs 数据库数量 */
     int daemonize;                  /* True if running as a daemon */
     // 客户端输出缓冲区大小限制
     // 数组的元素有 REDIS_CLIENT_LIMIT_NUM_CLASSES 个
@@ -1173,7 +1173,7 @@ struct redisServer {
     int masterport;                 /* Port of master */
     // 超时时间
     int repl_timeout;               /* Timeout after N seconds of master idle */
-    // 主服务器所对应的客户端
+    // 当前节点是slave节点,它的master所对应的客户端
     redisClient *master;     /* Client that is master for this slave */
     // 被缓存的主服务器，PSYNC 时使用
     redisClient *cached_master; /* Cached master to be reused for PSYNC. */
@@ -1198,7 +1198,7 @@ struct redisServer {
     int repl_serve_stale_data; /* Serve stale data when link is down? */
     // 是否只读从服务器？
     int repl_slave_ro;          /* Slave is read only? */
-    // 连接断开的时长
+    // master连接断开的时长
     time_t repl_down_since; /* Unix time at which link with master went down */
     // 是否要在 SYNC 之后关闭 NODELAY ？
     int repl_disable_tcp_nodelay;   /* Disable TCP_NODELAY after SYNC? */
@@ -1231,7 +1231,7 @@ struct redisServer {
 
     /* Blocked clients */
     unsigned int bpop_blocked_clients; /* Number of clients blocked by lists */
-    list *unblocked_clients; /* list of clients to unblock before next loop */
+    list *unblocked_clients; /* list of clients to unblock before next loop. 下次循环前 unblock的客户端列表 */
     list *ready_keys;        /* List of readyList structures for BLPOP & co */
 
 

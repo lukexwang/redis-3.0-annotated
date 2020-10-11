@@ -413,6 +413,7 @@ int pubsubPublishMessage(robj *channel, robj *message) {
             // 1) "message"
             // 2) "xxx"
             // 3) "hello"
+            // 包含3个元素
             addReply(c,shared.mbulkhdr[3]);
             // "message" 字符串
             addReply(c,shared.messagebulk);
@@ -451,10 +452,15 @@ int pubsubPublishMessage(robj *channel, robj *message) {
                 // 2) "*"
                 // 3) "xxx"
                 // 4) "hello"
+                // 有4个元素
                 addReply(pat->client,shared.mbulkhdr[4]);
+                // pmessage
                 addReply(pat->client,shared.pmessagebulk);
+                // channel*
                 addReplyBulk(pat->client,pat->pattern);
+                // channel01
                 addReplyBulk(pat->client,channel);
+                // hello
                 addReplyBulk(pat->client,message);
 
                 // 对接收消息的客户端进行计数

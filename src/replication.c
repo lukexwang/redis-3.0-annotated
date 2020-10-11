@@ -268,6 +268,7 @@ void replicationFeedSlaves(list *slaves, int dictid, robj **argv, int argc) {
              * ad add the final CRLF */
             // 将参数从对象转换成协议格式
             aux[0] = '$';
+            // ll2string() 将 longlong 转换成 string,这里指代len中保存马上写入的argv[j]的长度
             len = ll2string(aux+1,sizeof(aux)-1,objlen);
             aux[len+1] = '\r';
             aux[len+2] = '\n';
@@ -2164,11 +2165,12 @@ void processClientsWaitingReplicas(void) {
 
 /* Return the slave replication offset for this instance, that is
  * the offset for which we already processed the master replication stream. */
+// 返回当前节点(slave)的复制偏移, 也就是其已处理的master的复制偏移量
 long long replicationGetSlaveOffset(void) {
     long long offset = 0;
 
     if (server.masterhost != NULL) {
-        if (server.master) {
+        if (server.master) { // server.master 是当前master节点的客户端
             offset = server.master->reploff;
         } else if (server.cached_master) {
             offset = server.cached_master->reploff;
@@ -2178,6 +2180,7 @@ long long replicationGetSlaveOffset(void) {
      * this function is designed to return an offset that can express the
      * amount of data processed by the master, so we return a positive
      * integer. */
+    // 当master根本不支持offset时, offset 可能是 -1. 然而这个函数被设计成表示master处理数据的偏移量,因此我们返回一个正整数
     if (offset < 0) offset = 0;
     return offset;
 }

@@ -2118,6 +2118,8 @@ void flushSlavesOutputBuffers(void) {
  * still served, so this function can be used on server upgrades where it is
  * required that slaves process the latest bytes from the replication stream
  * before being turned to masters.
+ * 这个函数用于终止普通的 和 pub/sub 的客户端, 但仍然为slave提供服务. 
+ * 因此可以在服务器升级中使用此功能，在这种情况下，需要slave服务器处理复制流中的最新字节，然后再转换为 主服务器.
  *
  * This function is also internally used by Redis Cluster for the manual
  * failover procedure implemented by CLUSTER FAILOVER.
@@ -2127,7 +2129,7 @@ void flushSlavesOutputBuffers(void) {
  * time left for the previous duration. However if the duration is smaller
  * than the time left for the previous pause, no change is made to the
  * left duration. */
-// 暂停客户端，让服务器在指定的时间内不再接受被暂停客户端发来的命令
+// 本节点暂停客户端，让服务器在指定的时间内不再接受被暂停客户端发来的命令
 // 可以用于系统更新，并在内部由 CLUSTER FAILOVER 命令使用。
 void pauseClients(mstime_t end) {
 
@@ -2141,9 +2143,12 @@ void pauseClients(mstime_t end) {
 
 /* Return non-zero if clients are currently paused. As a side effect the
  * function checks if the pause time was reached and clear it. */
- // 判断服务器目前被暂停客户端的数量，没有任何客户端被暂停时，返回 0 。
+ // 判断服务器目前被暂停客户端的数量，没有任何客户端被暂停时，返回 0 。否则返回被暂停的客户端数量 server.clients_paused;
+ // 如果client paused 结束时间到达, 则不再执行 client paused操作 并清理 server.clients_paused;
 int clientsArePaused(void) {
+    // server.mstime 代表每次 server cron循环的 unix timestamp;
     if (server.clients_paused && server.clients_pause_end_time < server.mstime) {
+        // 被暂停的客户端数量大于0, 同时 server.mstime (当前cron时间) 大于 clients_pause_end_time(client_paused的结束时间) 代表已经过了 clients_pause 时段, 那么此时将所有 server.clients 加入到 server.unblocked中
         listNode *ln;
         listIter li;
         redisClient *c;

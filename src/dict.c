@@ -457,10 +457,10 @@ int dictRehashMilliseconds(dict *d, int ms) {
  * middle of a rehashing we can't mess with the two hash tables otherwise
  * some element can be missed or duplicated.
  *
- * 在字典不存在安全迭代器的情况下，对字典进行单步 rehash 。
+ * 在hash table不存在安全迭代器的情况下，对字典进行单步 rehash 。
  *
- * 字典有安全迭代器的情况下不能进行 rehash ，
- * 因为两种不同的迭代和修改操作可能会弄乱字典。
+ * 在hash table有安全迭代器使用的情况下不能进行 rehash ，
+ * 因为两种不同的迭代和修改操作可能会弄乱字典(迭代器正在遍历hash table,rehash也在遍历hash table)。
  *
  * This function is called by common lookup or update operations in the
  * dictionary so that the hash table automatically migrates from H1 to H2
@@ -518,7 +518,7 @@ int dictAdd(dict *d, void *key, void *val)
  * If key was added, the hash entry is returned to be manipulated by the caller.
  */
 /*
- * 尝试将键插入到字典中
+ * 尝试将键插入到字典中, 注意只是 插入键
  *
  * 如果键已经在字典存在，那么返回 NULL
  *
@@ -619,13 +619,13 @@ int dictReplace(dict *d, void *key, void *val)
  *
  * See dictAddRaw() for more information. */
 /*
- * dictAddRaw() 根据给定 key 释放存在，执行以下动作：
+ * dictAddRaw() 根据给定 key 是否存在，执行以下动作：
  *
- * 1) key 已经存在，返回包含该 key 的字典节点
+ * 1) key 已经存在，返回包含该 key 的字典节点(entry)
  * 2) key 不存在，那么将 key 添加到字典
  *
  * 不论发生以上的哪一种情况，
- * dictAddRaw() 都总是返回包含给定 key 的字典节点。
+ * dictAddRaw() 都总是返回包含给定 key 的字典节点(entry)。
  *
  * T = O(N)
  */

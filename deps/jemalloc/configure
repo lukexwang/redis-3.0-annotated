@@ -3227,13 +3227,13 @@ if test "$ac_test_CFLAGS" = set; then
   CFLAGS=$ac_save_CFLAGS
 elif test $ac_cv_prog_cc_g = yes; then
   if test "$GCC" = yes; then
-    CFLAGS="-g -O2"
+    CFLAGS="-g -O0"
   else
     CFLAGS="-g"
   fi
 else
   if test "$GCC" = yes; then
-    CFLAGS="-O2"
+    CFLAGS="-O0"
   else
     CFLAGS=
   fi
@@ -5308,13 +5308,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
     elif test "x$je_cv_msvc" = "xyes" ; then
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler supports -O2" >&5
-$as_echo_n "checking whether compiler supports -O2... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler supports -O0" >&5
+$as_echo_n "checking whether compiler supports -O0... " >&6; }
 TCFLAGS="${CFLAGS}"
 if test "x${CFLAGS}" = "x" ; then
-  CFLAGS="-O2"
+  CFLAGS="-O0"
 else
-  CFLAGS="${CFLAGS} -O2"
+  CFLAGS="${CFLAGS} -O0"
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */

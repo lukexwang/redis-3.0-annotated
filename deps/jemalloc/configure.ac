@@ -569,7 +569,7 @@ if test "x$enable_debug" = "x0" -a "x$no_CFLAGS" = "xyes" ; then
       JE_CFLAGS_APPEND([-O3])
       JE_CFLAGS_APPEND([-funroll-loops])
     elif test "x$je_cv_msvc" = "xyes" ; then
-      JE_CFLAGS_APPEND([-O2])
+      JE_CFLAGS_APPEND([-O0])
     else
       JE_CFLAGS_APPEND([-O])
     fi

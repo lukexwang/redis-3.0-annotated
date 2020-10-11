@@ -59,7 +59,7 @@ struct clusterNode;
 
 
 /* clusterLink encapsulates everything needed to talk with a remote node. */
-// clusterLink 包含了与其他节点进行通讯所需的全部信息
+// clusterLink 包含了与一个remote节点进行通讯所需的全部信息
 typedef struct clusterLink {
 
     // 连接的创建时间
@@ -213,7 +213,7 @@ typedef struct clusterState {
     // 集群当前的状态：是在线还是下线
     int state;            /* REDIS_CLUSTER_OK, REDIS_CLUSTER_FAIL, ... */
 
-    // 集群中至少处理着一个槽的节点的数量。
+    // 集群中至少处理着一个槽的master node的数量。
     int size;             /* Num of master nodes with at least one slot */
 
     // 集群节点名单（包括 myself 节点）
@@ -245,7 +245,7 @@ typedef struct clusterState {
     zskiplist *slots_to_keys;
 
     /* The following fields are used to take the slave state on elections. */
-    // 以下这些域被用于进行故障转移选举
+    // 以下这些字段被用于表示failover选举过程中 slave的状态
 
     // 上次执行选举或者下次执行选举的时间
     mstime_t failover_auth_time; /* Time of previous or next election. */
@@ -256,8 +256,10 @@ typedef struct clusterState {
     // 如果值为 1 ，表示本节点已经向其他节点发送了投票请求
     int failover_auth_sent;     /* True if we already asked for votes. */
 
+    // 当前failover请求的 slave排名?
     int failover_auth_rank;     /* This slave rank for current auth request. */
 
+    // 当前选举的Epoch?
     uint64_t failover_auth_epoch; /* Epoch of the current election. */
 
     /* Manual failover state in common. */
@@ -270,11 +272,11 @@ typedef struct clusterState {
     /* 主服务器的手动故障转移状态 */
     clusterNode *mf_slave;      /* Slave performing the manual failover. */
     /* Manual failover state of slave. */
-    /* 从服务器的手动故障转移状态 */
+    /* 从服务器的manual failover转移状态 */
     long long mf_master_offset; /* Master offset the slave needs to start MF
-                                   or zero if stil not received. */
+                                   or zero if stil not received. slave启动manual failover(需要满足)的Master offset, 如果还没从master收到该消息,则为0  */
     // 指示手动故障转移是否可以开始的标志值
-    // 值为非 0 时表示各个主服务器可以开始投票
+    // 值为非 0 时表示可以请求masters开始投票
     int mf_can_start;           /* If non-zero signal that the manual failover
                                    can start requesting masters vote. */
 
@@ -486,7 +488,8 @@ typedef struct {
 
 /* Message flags better specify the packet content or are used to
  * provide some information about the node state. */
-#define CLUSTERMSG_FLAG0_PAUSED (1<<0) /* Master paused for manual failover. */
+// Message 标志 可以更好地指定数据包的内容, 或用于提供有关节点状态的一些信息.
+#define CLUSTERMSG_FLAG0_PAUSED (1<<0) /* Master paused for manual failover. 因为manual failover, master处于paused状态 */
 #define CLUSTERMSG_FLAG0_FORCEACK (1<<1) /* Give ACK to AUTH_REQUEST even if
                                             master is up. */
 

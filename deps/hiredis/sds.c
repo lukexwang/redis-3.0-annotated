@@ -39,15 +39,21 @@
 /* Create a new sds string with the content specified by the 'init' pointer
  * and 'initlen'.
  * If NULL is used for 'init' the string is initialized with zero bytes.
+ * 使用init指针 和 initlen中指定的内容创建一个新的 sds 字符串;
+ * 如果 init 是 NULL, 则 sds 字符串初始化为 0 字节的字符串
  *
  * The string is always null-termined (all the sds strings are, always) so
  * even if you create an sds string with:
  *
  * mystring = sdsnewlen("abc",3");
+ * 字符串总是 空字符结尾(所有sds字符串都是), 尽管你利用 mystring = sdsnewlen("abc",3) 创建一个字符串
  *
  * You can print the string with printf() as there is an implicit \0 at the
  * end of the string. However the string is binary safe and can contain
- * \0 characters in the middle, as the length is stored in the sds header. */
+ * \0 characters in the middle, as the length is stored in the sds header. 
+ * 你能通过 printf() 打印sds字符串, 因为字符串最后以 \0 结尾.
+ * 然而 二进制安全的字符串 如果在中间包含了 \0, 那么这个字符串的length保存在 sds 头部
+ */
 sds sdsnewlen(const void *init, size_t initlen) {
     struct sdshdr *sh;
 
@@ -66,12 +72,15 @@ sds sdsnewlen(const void *init, size_t initlen) {
 }
 
 /* Create an empty (zero length) sds string. Even in this case the string
- * always has an implicit null term. */
+ * always has an implicit null term.
+ * 创建一个空的(0长度)的sds字符串
+*/
 sds sdsempty(void) {
     return sdsnewlen("",0);
 }
 
 /* Create a new sds string starting from a null termined C string. */
+// 根据 一个\0结尾的C字符串 创建一个 sds 字符串
 sds sdsnew(const char *init) {
     size_t initlen = (init == NULL) ? 0 : strlen(init);
     return sdsnewlen(init, initlen);
@@ -234,6 +243,8 @@ sds sdsgrowzero(sds s, size_t len) {
  *
  * After the call, the passed sds string is no longer valid and all the
  * references must be substituted with the new pointer returned by the call. */
+// 将t指向的二进制安全字符串 len 字节 append到 sds字符串 s的后面;
+// 该函数调用后, s指向的sds字符串不再有效, 而是指向了一个新的指针
 sds sdscatlen(sds s, const void *t, size_t len) {
     struct sdshdr *sh;
     size_t curlen = sdslen(s);
